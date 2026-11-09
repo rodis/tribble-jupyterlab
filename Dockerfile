@@ -1,11 +1,12 @@
 # JupyterLab for Tribble.
 #
 # The platform builds from a repo instead of pulling a registry image, so this
-# Dockerfile exists only to re-export the official Jupyter "minimal-notebook"
+# Dockerfile exists only to re-export the official Jupyter "tensorflow-notebook"
 # image. Pinned to a dated tag for reproducible builds; bump it deliberately.
 #
-# Upstream: https://quay.io/repository/jupyter/minimal-notebook
-FROM quay.io/jupyter/minimal-notebook:2026-11-02
+# CPU build. For GPU nodes, switch to the CUDA variant: cuda-2026-11-02.
+# Upstream: https://quay.io/repository/jupyter/tensorflow-notebook
+FROM quay.io/jupyter/tensorflow-notebook:2026-11-02
 
 # Upstream config, repeated here so it is visible:
 #   ENTRYPOINT ["tini", "-g", "--", "start.sh"]   (start.sh execs CMD)
@@ -15,6 +16,10 @@ FROM quay.io/jupyter/minimal-notebook:2026-11-02
 # CMD below prefers over this value.
 ENV JUPYTER_PORT=8888
 EXPOSE 8888
+
+# Quieter TensorFlow startup: drop the INFO/WARNING chatter about CPU features
+# and (on CPU nodes) the absent CUDA libraries.
+ENV TF_CPP_MIN_LOG_LEVEL=1
 
 # Bind to all interfaces and listen on whatever port the platform hands us.
 # Auth: set JUPYTER_TOKEN in the platform's env to pick the login token
